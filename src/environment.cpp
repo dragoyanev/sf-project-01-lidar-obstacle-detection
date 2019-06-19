@@ -51,6 +51,9 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
     cout <<"Lidar Pos x="<< lidar->position.x << " y="<< lidar->position.y <<" z="<< lidar->position.z <<endl;
 
+    pcl::PointCloud<pcl::PointXYZ>::Ptr lidarScan = lidar->scan();
+    renderRays(viewer, lidar->position, lidarScan);
+
     // TODO:: Create point processor
   
 }
