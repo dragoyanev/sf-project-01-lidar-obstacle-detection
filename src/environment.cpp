@@ -34,6 +34,7 @@ std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer
     return cars;
 }
 
+static const double LIDAR_GROUND_SLOPE_ANGLE = 0.0;
 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
@@ -45,7 +46,10 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     bool renderScene = true;
     std::vector<Car> cars = initHighway(renderScene, viewer);
     
-    // TODO:: Create lidar sensor 
+    // TODO::OK Create lidar sensor
+    Lidar *lidar = new Lidar(cars, LIDAR_GROUND_SLOPE_ANGLE);
+
+    cout <<"Lidar Pos x="<< lidar->position.x << " y="<< lidar->position.y <<" z="<< lidar->position.z <<endl;
 
     // TODO:: Create point processor
   
