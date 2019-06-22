@@ -66,9 +66,45 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
 	
-	// TODO: Fill in this function
+    // TODO:OK Fill in this function
 
 	// For max iterations 
+    int bestLineCount = 0;
+    for (int i = 0; i < maxIterations; i++) {
+
+        int randomIndex = rand() % cloud->points.size();
+        pcl::PointXYZ p1 = cloud->points.at(randomIndex);
+        int newRandomIndex = rand() % cloud->points.size();
+        while (randomIndex == newRandomIndex)
+            newRandomIndex = rand() % cloud->points.size();
+        pcl::PointXYZ p2 = cloud->points.at(newRandomIndex);
+
+//        std::cout << "Random line: p1[" << randomIndex << "](" << p1.x <<", "<<p1.y<<")";
+//        std::cout << " p2[" << newRandomIndex << "](" << p2.x <<", "<<p2.y<<")" << std::endl;
+
+
+        double a = p1.y - p2.y;
+        double b = p2.x - p1.x;
+        double c = p1.x * p2.y - p2.x * p1.y;
+
+        int inliersCount = 0;
+        std::unordered_set<int> inliersResultTmp;
+        for(int j = 0; j < cloud->points.size(); ++j) {
+            pcl::PointXYZ point =  cloud->points.at(j);
+            double distance = std::fabs(a*point.x + b*point.y+c)/std::sqrt(a*a + b*b);
+            if (distance < distanceTol) { // inlier
+                ++inliersCount;
+                inliersResultTmp.insert(j);
+            }
+        }
+
+        if (bestLineCount < inliersCount) {
+            bestLineCount = inliersCount;
+            inliersResult.swap(inliersResultTmp);
+        }
+
+
+    }
 
 	// Randomly sample subset and fit line
 
@@ -92,7 +128,7 @@ int main ()
 	
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
-	std::unordered_set<int> inliers = Ransac(cloud, 0, 0);
+    std::unordered_set<int> inliers = Ransac(cloud, 50, 0.5);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
