@@ -42,6 +42,8 @@ static const double POINT_PROCESSOR_CLUSTERING_DISTANCE_THRESHOLD = 1.0;
 static const int POINT_PROCESSOR_CLUSTERING_MIN_CLUSTER_POINTS = 3;
 static const int POINT_PROCESSOR_CLUSTERING_MAX_CLUSTER_POINTS = 30;
 
+static const double POINT_PROCESSOR_I_VOXEL_SIZE = 0.2;
+
 void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
     // ----------------------------------------------------
@@ -51,7 +53,14 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // Create point processor
     ProcessPointClouds<pcl::PointXYZI> *pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessorI->loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
-    renderPointCloud(viewer, inputCloud, "inputCloud");
+
+
+    Eigen::Vector4f minPoint = Eigen::Vector4f();
+    Eigen::Vector4f maxPoint = Eigen::Vector4f();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessorI->FilterCloud(inputCloud, POINT_PROCESSOR_I_VOXEL_SIZE, minPoint, maxPoint);
+
+//    renderPointCloud(viewer, inputCloud, "inputCloud");
+    renderPointCloud(viewer, filterCloud, "filterCloud");
 }
 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
