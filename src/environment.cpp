@@ -55,8 +55,8 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessorI->loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
 
 
-    Eigen::Vector4f minPoint = Eigen::Vector4f();
-    Eigen::Vector4f maxPoint = Eigen::Vector4f();
+    Eigen::Vector4f minPoint = Eigen::Vector4f(-10, -5, -2, 1);
+    Eigen::Vector4f maxPoint = Eigen::Vector4f(10, 7, 1, 1);
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessorI->FilterCloud(inputCloud, POINT_PROCESSOR_I_VOXEL_SIZE, minPoint, maxPoint);
 
 //    renderPointCloud(viewer, inputCloud, "inputCloud");

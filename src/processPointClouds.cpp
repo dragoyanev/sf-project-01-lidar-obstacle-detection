@@ -37,11 +37,19 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
     vg.setLeafSize(filterRes, filterRes, filterRes);
     vg.filter(*filteredCloud);
 
+    typename pcl::PointCloud<PointT>::Ptr boxRegion {new pcl::PointCloud<PointT>};
+
+    pcl::CropBox<PointT> region(true);
+    region.setMin(minPoint);
+    region.setMax(maxPoint);
+    region.setInputCloud(filteredCloud);
+    region.filter(*boxRegion);
+
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "filtering took " << elapsedTime.count() << " milliseconds" << std::endl;
 
-    return filteredCloud;
+    return boxRegion;
 
 }
 
