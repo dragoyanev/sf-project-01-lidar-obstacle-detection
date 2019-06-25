@@ -114,8 +114,14 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
         }
 
         if (renderBoxQEn) {
+            // If we want to debug at the same time both render boxes we need unique string Id for the render box
+            // Thets why I use some offset here as patch
+            int sameBoxesOffset = 0;
+            if (renderBoxEn == true)
+                sameBoxesOffset = 100;
+
             BoxQ boxq = pointProcessor->BoundingBoxQ(cluster);
-            renderBox(viewer, boxq, clusterId);
+            renderBox(viewer, boxq, clusterId + sameBoxesOffset);
         }
 
         ++clusterId;
