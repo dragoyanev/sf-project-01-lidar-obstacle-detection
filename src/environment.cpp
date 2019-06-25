@@ -47,7 +47,8 @@ static const double POINT_PROCESSOR_I_CLUSTERING_DISTANCE_THRESHOLD = 0.5;
 static const int POINT_PROCESSOR_I_CLUSTERING_MIN_CLUSTER_POINTS = 10;
 static const int POINT_PROCESSOR_I_CLUSTERING_MAX_CLUSTER_POINTS = 3000;
 
-void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer,
+               ProcessPointClouds<pcl::PointXYZI> *pointProcessorI, const pcl::PointCloud<pcl::PointXYZI>::Ptr& inputCloud)
 {
     // ----------------------------------------------------
     // -----Open 3D viewer and display City Block     -----
@@ -55,11 +56,6 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     bool renderClusterEn = true;
     bool renderBoxEn = true;
     bool renderBoxQEn = false;
-
-    // Create point processor
-    ProcessPointClouds<pcl::PointXYZI> *pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
-    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessorI->loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
-
 
     Eigen::Vector4f minPoint = Eigen::Vector4f(-10, -5, -2, 1);
     Eigen::Vector4f maxPoint = Eigen::Vector4f(30, 7, 1, 1);
@@ -212,10 +208,27 @@ int main (int argc, char** argv)
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
 //    simpleHighway(viewer);
-    cityBlock(viewer);
 
-    while (!viewer->wasStopped ())
+    // Create point processor
+    ProcessPointClouds<pcl::PointXYZI> *pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
+    std::vector<boost::filesystem::path> stream = pointProcessorI->streamPcd("../src/sensors/data/pcd/data_1");
+    auto streamIterator = stream.begin();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloudI;
+
+    while (!viewer->wasStopped())
     {
-        viewer->spinOnce ();
+        // Clear viewer
+        viewer->removeAllPointClouds();
+        viewer->removeAllShapes();
+
+        // Load pcd and run odstacle detection process
+        inputCloudI = pointProcessorI->loadPcd((*streamIterator).string());
+        cityBlock(viewer, pointProcessorI, inputCloudI);
+
+        streamIterator++;
+        if (streamIterator == stream.end())
+            streamIterator = stream.begin();
+
+        viewer->spinOnce();
     } 
 }
