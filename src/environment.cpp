@@ -60,7 +60,11 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessorI->FilterCloud(inputCloud, POINT_PROCESSOR_I_VOXEL_SIZE, minPoint, maxPoint);
 
 //    renderPointCloud(viewer, inputCloud, "inputCloud");
-    renderPointCloud(viewer, filterCloud, "filterCloud");
+//    renderPointCloud(viewer, filterCloud, "filterCloud");
+
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, POINT_PROCESSOR_MAX_ITERATIONS, POINT_PROCESSOR_DISTANCE_THRESHOLD);
+    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
+    renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
 }
 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
