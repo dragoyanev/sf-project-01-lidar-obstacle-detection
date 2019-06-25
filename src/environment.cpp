@@ -53,6 +53,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // -----Open 3D viewer and display City Block     -----
     // ----------------------------------------------------
     bool renderClusterEn = true;
+    bool renderBoxEn = true;
 
     // Create point processor
     ProcessPointClouds<pcl::PointXYZI> *pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
@@ -95,6 +96,12 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
             pointProcessorI->numPoints(cluster);
             renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId%colors.size()]);
         }
+
+        if (renderBoxEn) {
+            Box box = pointProcessorI->BoundingBox(cluster);
+            renderBox(viewer, box, clusterId);
+        }
+
         ++clusterId;
     }
 }
