@@ -54,6 +54,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // ----------------------------------------------------
     bool renderClusterEn = true;
     bool renderBoxEn = true;
+    bool renderBoxQEn = false;
 
     // Create point processor
     ProcessPointClouds<pcl::PointXYZI> *pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
@@ -68,8 +69,8 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 //    renderPointCloud(viewer, filterCloud, "filterCloud");
 
     std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, POINT_PROCESSOR_MAX_ITERATIONS, POINT_PROCESSOR_DISTANCE_THRESHOLD);
-    renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
 //    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 1, 1));
+    renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
 
     // Draw roof crop box
     Box box;
@@ -100,6 +101,17 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
         if (renderBoxEn) {
             Box box = pointProcessorI->BoundingBox(cluster);
             renderBox(viewer, box, clusterId);
+        }
+
+        if (renderBoxQEn) {
+            // If we want to debug at the same time both render boxes we need unique string Id for the render box
+            // Thets why I use some offset here as patch
+            int sameBoxesOffset = 0;
+            if (renderBoxEn == true)
+                sameBoxesOffset = 100;
+
+            BoxQ boxq = pointProcessorI->BoundingBoxQ(cluster);
+            renderBox(viewer, boxq, clusterId + sameBoxesOffset);
         }
 
         ++clusterId;
