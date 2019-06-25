@@ -43,12 +43,16 @@ static const int POINT_PROCESSOR_CLUSTERING_MIN_CLUSTER_POINTS = 3;
 static const int POINT_PROCESSOR_CLUSTERING_MAX_CLUSTER_POINTS = 30;
 
 static const double POINT_PROCESSOR_I_VOXEL_SIZE = 0.2;
+static const double POINT_PROCESSOR_I_CLUSTERING_DISTANCE_THRESHOLD = 0.5;
+static const int POINT_PROCESSOR_I_CLUSTERING_MIN_CLUSTER_POINTS = 10;
+static const int POINT_PROCESSOR_I_CLUSTERING_MAX_CLUSTER_POINTS = 3000;
 
 void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
     // ----------------------------------------------------
     // -----Open 3D viewer and display City Block     -----
     // ----------------------------------------------------
+    bool renderClusterEn = true;
 
     // Create point processor
     ProcessPointClouds<pcl::PointXYZI> *pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
@@ -63,8 +67,8 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 //    renderPointCloud(viewer, filterCloud, "filterCloud");
 
     std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, POINT_PROCESSOR_MAX_ITERATIONS, POINT_PROCESSOR_DISTANCE_THRESHOLD);
-    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
     renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
+//    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 1, 1));
 
     // Draw roof crop box
     Box box;
@@ -76,6 +80,23 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     box.z_max = -0.4;
     renderBox(viewer, box, 555, Color(1, 0, 1));
 
+
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessorI->Clustering(segmentCloud.first, POINT_PROCESSOR_I_CLUSTERING_DISTANCE_THRESHOLD, POINT_PROCESSOR_I_CLUSTERING_MIN_CLUSTER_POINTS, POINT_PROCESSOR_I_CLUSTERING_MAX_CLUSTER_POINTS);
+
+    int clusterId = 0;
+    std::vector<Color> colors = {Color(1, 1, 0), Color(1, 0, 1),
+                                 Color(1, 0, 0), Color(0, 1, 1),
+                                 Color(0.5, 0, 0.5),
+                                 Color(0.5, 0, 0), Color(0, 0.5, 0.5), Color(0, 0.5, 0)};
+
+    for (pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters) {
+        if (renderClusterEn) {
+            std::cout << "cluster size ";
+            pointProcessorI->numPoints(cluster);
+            renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId%colors.size()]);
+        }
+        ++clusterId;
+    }
 }
 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
