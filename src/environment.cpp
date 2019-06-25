@@ -65,6 +65,17 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, POINT_PROCESSOR_MAX_ITERATIONS, POINT_PROCESSOR_DISTANCE_THRESHOLD);
     renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
     renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
+
+    // Draw roof crop box
+    Box box;
+    box.x_min = -1.5;
+    box.x_max = 2.6;
+    box.y_min = -1.7;
+    box.y_max = 1.7;
+    box.z_min = -1;
+    box.z_max = -0.4;
+    renderBox(viewer, box, 555, Color(1, 0, 1));
+
 }
 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
