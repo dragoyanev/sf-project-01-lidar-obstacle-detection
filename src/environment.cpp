@@ -64,7 +64,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer,
 //    renderPointCloud(viewer, inputCloud, "inputCloud");
 //    renderPointCloud(viewer, filterCloud, "filterCloud");
 
-    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, POINT_PROCESSOR_MAX_ITERATIONS, POINT_PROCESSOR_DISTANCE_THRESHOLD);
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlaneMy(filterCloud, POINT_PROCESSOR_MAX_ITERATIONS, POINT_PROCESSOR_DISTANCE_THRESHOLD);
 //    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
     renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
 
@@ -214,6 +214,8 @@ int main (int argc, char** argv)
     std::vector<boost::filesystem::path> stream = pointProcessorI->streamPcd("../src/sensors/data/pcd/data_1");
     auto streamIterator = stream.begin();
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloudI;
+//    inputCloudI = pointProcessorI->loadPcd((*streamIterator).string());
+//    cityBlock(viewer, pointProcessorI, inputCloudI);
 
     while (!viewer->wasStopped())
     {

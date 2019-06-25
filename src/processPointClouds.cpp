@@ -133,6 +133,38 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     return segResult;
 }
 
+template<typename PointT>
+std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlaneMy(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold)
+{
+    // Time segmentation process
+    auto startTime = std::chrono::steady_clock::now();
+    typename pcl::PointCloud<PointT>::Ptr  inliersCloud(new pcl::PointCloud<PointT>());
+    typename pcl::PointCloud<PointT>::Ptr outliersCloud(new pcl::PointCloud<PointT>());
+
+    std::unordered_set<int> inliers = Ransac3d(cloud, maxIterations, distanceThreshold);
+
+
+    if (inliers.size() == 0)
+        std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+
+
+    auto endTime = std::chrono::steady_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    std::cout << "plane segmentation took " << elapsedTime.count() << " milliseconds" << std::endl;
+
+    for(int index = 0; index < cloud->points.size(); index++)
+    {
+        PointT point = cloud->points[index];
+        if (inliers.count(index))
+            inliersCloud->points.push_back(point);
+        else
+            outliersCloud->points.push_back(point);
+    }
+
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(outliersCloud, inliersCloud);
+    return segResult;
+}
+
 
 template<typename PointT>
 std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize)
@@ -273,3 +305,73 @@ std::vector<boost::filesystem::path> ProcessPointClouds<PointT>::streamPcd(std::
     return paths;
 
 }
+
+template<typename PointT>
+std::unordered_set<int> ProcessPointClouds<PointT>::Ransac3d(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol)
+{
+    // Measure the time
+    auto startTime = std::chrono::steady_clock::now();
+
+    std::unordered_set<int> inliersResult;
+    srand(time(NULL));
+
+    // For max iterations
+    while (maxIterations--) {
+        // Randomly pic three points
+        std::unordered_set<int> inliersResultTmp;
+
+        while (inliersResultTmp.size() < 3)
+            inliersResultTmp.insert(rand() % cloud->points.size());
+
+        auto itr = inliersResultTmp.begin();
+        PointT p1 = cloud->points.at(*itr);
+        itr++;
+        PointT p2 = cloud->points.at(*itr);
+        itr++;
+        PointT p3 = cloud->points.at(*itr);
+
+        PointT v1;
+        PointT v2;
+        v1.x = p2.x - p1.x;
+        v1.y = p2.y - p1.y;
+        v1.z = p2.z - p1.z;
+        v2.x = p3.x - p1.x;
+        v2.y = p3.y - p1.y;
+        v2.z = p3.z - p1.z;
+        PointT v1xv2;
+        v1xv2.x = v1.y*v2.z - v1.z*v2.y;
+        v1xv2.y = v1.z*v2.x - v1.x*v2.z;
+        v1xv2.z = v1.x*v2.y - v1.y*v2.x;
+
+        double a = v1xv2.x;
+        double b = v1xv2.y;
+        double c = v1xv2.z;
+        double d = -(a*p1.x + b*p1.y + c*p1.z);
+
+
+        // Measure distance between every point and fitted line
+        for(int j = 0; j < cloud->points.size(); ++j) {
+
+            // This point is already inlier (one of random points)
+            if (inliersResultTmp.count(j) > 0)
+                continue;
+
+            PointT point =  cloud->points.at(j);
+
+            double distance = std::fabs(a*point.x + b*point.y + c*point.z + d)/std::sqrt(a*a + b*b + c*c);
+            // If distance is smaller than threshold count it as inlier
+            if (distance < distanceTol) // inlier
+                inliersResultTmp.insert(j);
+        }
+        // Return indicies of inliers from fitted line with most inliers
+        if (inliersResult.size() < inliersResultTmp.size())
+            inliersResult = inliersResultTmp;
+    }
+
+    auto endTime = std::chrono::steady_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    std::cout << "RANSAC 3D took " << elapsedTime.count() << " milliseconds" << std::endl;
+
+    return inliersResult;
+}
+
