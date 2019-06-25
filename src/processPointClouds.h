@@ -19,6 +19,7 @@
 #include <chrono>
 #include <unordered_set>
 #include "render/box.h"
+#include "cluster/kdtree.h"
 
 template<typename PointT>
 class ProcessPointClouds {
@@ -39,6 +40,7 @@ public:
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SegmentPlaneMy(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold);
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
+    std::vector<typename pcl::PointCloud<PointT>::Ptr> ClusteringMy(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
 
     Box BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster);
     BoxQ BoundingBoxQ(typename pcl::PointCloud<PointT>::Ptr cluster);
@@ -50,6 +52,9 @@ public:
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
 
     std::unordered_set<int> Ransac3d(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol);
+    void clusterHelper(int indice, const std::vector<std::vector<float>>& points, std::vector<int>& cluster,
+                       std::vector<bool>& processed, KdTree* tree, float distanceTol);
+    std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol);
   
 };
 #endif /* PROCESSPOINTCLOUDS_H_ */
